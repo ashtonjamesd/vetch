@@ -309,7 +309,7 @@ bool hasSubCommand(ArgNode *node, char *command) {
     return false;
 }
 
-void vetchParse(VetchArgParser *vetch, int argc, char **argv) {
+void vetchParse(VetchArgParser *vetch, int argc, char *argv[]) {
     for (int i = 1; i < argc; i++) {
         ArgNode *flag = findGlobalFlag(vetch, argv[i]);
         ArgNode *command = findCommand(vetch, argv[i]);
