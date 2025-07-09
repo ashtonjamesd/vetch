@@ -76,6 +76,10 @@ static ArgNode *newFlag(char *name) {
     flag->name = strdup(name);
     flag->type = ARG_TYPE_FLAG;
     flag->as.flag.aliases = newArray(sizeof(char *));
+    flag->isFound = false;
+    flag->parent = NULL;
+    flag->subcommands = NULL;
+    flag->flags = NULL;
 
     return flag;
 }
@@ -261,8 +265,18 @@ bool hasSubFlag(ArgNode *node, char *flag) {
     for (int i = 0; i < node->flags->count; i++) {
         ArgNode *subflag = (ArgNode*)node->flags->entries[i];
 
+        if (subflag->type == ARG_TYPE_FLAG) {
+            for (int i = 0; i < subflag->as.flag.aliases->count; i++) {
+                char *aliasFlag = (char *)subflag->as.flag.aliases->entries[i];
+
+                if (strcmp(aliasFlag, flag) == 0) {
+                    return subflag->isFound;
+                }
+            }
+        }
+
         if (strcmp(subflag->name, flag) == 0) {
-            return true;
+            return subflag->isFound;
         }
     }
     
@@ -300,8 +314,27 @@ void vetchParse(VetchArgParser *vetch, int argc, char **argv) {
         ArgNode *flag = findGlobalFlag(vetch, argv[i]);
         ArgNode *command = findCommand(vetch, argv[i]);
 
-        // flags such as -A for 'add' do not work
-        // they need to be parsed here
+        // parse the sub flags
+        for (int arg = 0; arg < argc; arg++) {
+            if (!command || !command->flags) break;
+
+            for (int x = 0; x < command->flags->count; x++) {
+                ArgNode *subFlag = (ArgNode *)command->flags->entries[x];
+
+                if (strcmp(argv[arg], subFlag->name) == 0) {
+                    subFlag->isFound = true;
+                    continue;
+                }
+
+                for (int a = 0; a < subFlag->as.flag.aliases->count; a++) {
+                    char *alias = (char *)subFlag->as.flag.aliases->entries[a];
+                    if (strcmp(argv[arg], alias) == 0) {
+                        subFlag->isFound = true;
+                        break;
+                    }
+                }
+            }
+        }
 
         if (command) {
             for (int j = 0; j < command->subcommands->count; j++) {

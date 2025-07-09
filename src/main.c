@@ -18,12 +18,12 @@ int main(int argc, char **argv) {
     setFlags(init, "-q, --quiet");
     setFlag(init, "--bare");
 
-
     ArgNode *add = setSubCommand(git, "add");
     setFlags(add, "--verbose, -v");
     setFlags(add, "--dry-run, -n");
     setFlags(add, "--force, -f");
     setFlags(add, "--interactive, -i");
+    setFlag(add, "-A");
 
     ArgNode *commit = setSubCommand(git, "commit");
     setFlags(commit, "-a, --interactive, --patch");
@@ -38,19 +38,39 @@ int main(int argc, char **argv) {
 
     vetchParse(v, argc, argv);
 
+    for (int i = 0; i < add->flags->count; i++) {
+        ArgNode *flag = (ArgNode *)add->flags->entries[i];
+        printf("%s: %d\n", flag->name, flag->isFound);
+    }
+
     if (!hasCommand(v, "git")) {
-        printf("all commands start with 'git'!");
+        printf("all commands start with 'git'!\n");
     }
 
     if (hasSubCommand(git, "add")) {
-        printf("add.."); // do add stuff
+        printf("do add stuff..\n");
+
+        if (hasSubFlag(add, "-A")) {
+            printf("do add -A stuff..\n");
+        }
+        if (hasSubFlag(add, "--verbose")) {
+            printf("do add --verbose stuff..\n");
+        }
+        if (hasSubFlag(add, "--dry-run")) {
+            printf("do add --dry-run stuff..\n");
+        }
+        if (hasSubFlag(add, "--force")) {
+            printf("do add --force stuff..\n");
+        }
+        if (hasSubFlag(add, "--interactive")) {
+            printf("do add --interactive stuff..\n");
+        }
+        if (hasSubFlag(add, "-i")) {
+            printf("also do add -i stuff..\n");
+        }
     }
     else if (hasSubCommand(git, "commit")) {
-        printf("commit.."); // do commit stuff
-    }
-
-    if (hasSubFlag(add, "-A")) {
-        printf("adding -A.."); // do add -A stuff
+        printf("do commit stuff..\n");
     }
 
     vetchPrint(v);
